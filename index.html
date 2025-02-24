@@ -3,174 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculate minimum water supply for firefighting per NFPA 1142 standards.">
+    <meta name="keywords" content="NFPA 1142, water supply calculator, firefighting, building safety">
+    <meta name="author" content="Your Name">
     <title>NFPA 1142 Water Supply Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        input[type="number"], select {
-            margin-left: 10px;
-            padding: 5px;
-        }
-        input[type="radio"] {
-            margin-left: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #result {
-            margin-top: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-        em {
-            font-size: 0.9em;
-            color: #555;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>NFPA 1142 Water Supply Calculator</h1>
-    <form id="waterSupplyForm">
-        <label>Length (ft): 
-            <input type="number" id="length" min="0" step="0.1">
-        </label>
-        <label>Width (ft): 
-            <input type="number" id="width" min="0" step="0.1">
-        </label>
-        <label>Height (ft): 
-            <input type="number" id="height" min="0" step="0.1">
-        </label>
-        <p><em>Or enter volume directly:</em></p>
-        <label>Volume (ft³): 
-            <input type="number" id="volume" min="0" step="0.1">
-        </label>
-        <p><em>Note: If volume is entered, it will override the calculated volume from dimensions.</em></p>
-        <label>Occupancy Hazard Classification:
-            <select id="ohc">
-                <option value="3">3 Severe</option>
-                <option value="4">4 High</option>
-                <option value="5">5 Moderate</option>
-                <option value="6">6 Low</option>
-                <option value="7">7 Light</option>
-            </select>
-        </label>
-        <label>Construction Type:
-            <select id="construction">
-                <option value="Type I" data-cc="0.5">Type I (442 or 332)</option>
-                <option value="Type II" data-cc="0.75">Type II (222, 111, or 000)</option>
-                <option value="Type III" data-cc="1.0">Type III (211 or 200)</option>
-                <option value="Type IV" data-cc="0.75">Type IV (2HH)</option>
-                <option value="Type V" data-cc="1.5">Type V (111 or 000)</option>
-            </select>
-        </label>
-        <label>Exposure Hazards:
-            <input type="radio" name="exposure" value="yes"> Yes
-            <input type="radio" name="exposure" value="no" checked> No
-        </label>
-        <p><em>Exposure Hazard: A structure within 50 ft of another building and greater than 100 ft<sup>2</sup> or larger in area</em></p>
-        <label>Approved Automatic Sprinklers Provided:
-            <input type="radio" name="sprinklers" value="yes"> Yes
-            <input type="radio" name="sprinklers" value="no" checked> No
-        </label>
-        <button type="button" onclick="calculateWaterSupply()">Calculate</button>
-    </form>
-    <div id="result"></div>
-
-    <script>
-        function calculateWaterSupply() {
-            // Retrieve input values
-            const lengthInput = document.getElementById('length').value;
-            const widthInput = document.getElementById('width').value;
-            const heightInput = document.getElementById('height').value;
-            const volumeInput = document.getElementById('volume').value;
-            const ohc = parseFloat(document.getElementById('ohc').value);
-            const construction = document.getElementById('construction');
-            const selectedConstruction = construction.options[construction.selectedIndex];
-            const cc = parseFloat(selectedConstruction.getAttribute('data-cc'));
-            const exposure = document.querySelector('input[name="exposure"]:checked').value;
-            const sprinklers = document.querySelector('input[name="sprinklers"]:checked').value;
-
-            // Determine volume
-            let volume;
-            if (volumeInput) {
-                volume = parseFloat(volumeInput);
-                if (isNaN(volume) || volume <= 0) {
-                    alert('Please enter a valid positive volume.');
-                    return;
-                }
-            } else {
-                if (!lengthInput || !widthInput || !heightInput) {
-                    alert('Please enter all dimensions (length, width, height) or the volume directly.');
-                    return;
-                }
-                const length = parseFloat(lengthInput);
-                const width = parseFloat(widthInput);
-                const height = parseFloat(heightInput);
-                if (isNaN(length) || isNaN(width) || isNaN(height) || length <= 0 || width <= 0 || height <= 0) {
-                    alert('Please enter valid positive dimensions.');
-                    return;
-                }
-                volume = length * width * height;
-            }
-
-            // Calculate full minimum water supply without sprinkler reduction
-            let wsMin_full;
-            if (exposure === 'no') {
-                wsMin_full = (volume / ohc) * cc;
-            } else {
-                wsMin_full = (volume / ohc) * cc * 1.5;
-            }
-
-            // Apply 50% reduction to water supply if sprinklers are present
-            let wsMin;
-            if (sprinklers === 'yes') {
-                wsMin = 0.5 * wsMin_full;
-            } else {
-                wsMin = wsMin_full;
-            }
-
-            // Enforce NFPA 1142 minimum water supply requirements
-            if (exposure === 'no') {
-                wsMin = Math.max(wsMin, 2000);
-            } else {
-                wsMin = Math.max(wsMin, 3000);
-            }
-
-            // Determine minimum water delivery rate based on NFPA 1142 Table 4.6.1
-            let deliveryRate;
-            if (wsMin < 2500) {
-                deliveryRate = 250;
-            } else if (wsMin < 10000) {
-                deliveryRate = 500;
-            } else if (wsMin < 20000) {
-                deliveryRate = 750;
-            } else {
-                deliveryRate = 1000;
-            }
-
-            // Display results
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p>Minimum Water Supply: ${Math.round(wsMin)} gallons</p>
-                <p>Minimum Water Delivery Rate: ${deliveryRate} gpm</p>
-            `;
-        }
-    </script>
+    <header>
+        <h1>NFPA 1142 Water Supply Calculator</h1>
+    </header>
+    <main>
+        <form id="waterSupplyForm" aria-label="Water Supply Calculation Form">
+            <div class="form-group">
+                <label for="length">Length (ft):</label>
+                <input type="number" id="length" min="0" step="0.1" placeholder="e.g., 50">
+            </div>
+            <div class="form-group">
+                <label for="width">Width (ft):</label>
+                <input type="number" id="width" min="0" step="0.1" placeholder="e.g., 30">
+            </div>
+            <div class="form-group">
+                <label for="height">Height (ft):</label>
+                <input type="number" id="height" min="0" step="0.1" placeholder="e.g., 20">
+            </div>
+            <p class="note">Or enter volume directly:</p>
+            <div class="form-group">
+                <label for="volume">Volume (ft³):</label>
+                <input type="number" id="volume" min="0" step="0.1" placeholder="e.g., 30000">
+            </div>
+            <p class="note">Note: If volume is entered, it will override the calculated volume from dimensions.</p>
+            <div class="form-group">
+                <label for="ohc">Occupancy Hazard Classification:</label>
+                <select id="ohc">
+                    <option value="3">3 Severe</option>
+                    <option value="4">4 High</option>
+                    <option value="5">5 Moderate</option>
+                    <option value="6">6 Low</option>
+                    <option value="7">7 Light</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="construction">Construction Type:</label>
+                <select id="construction">
+                    <option value="Type I" data-cc="0.5">Type I (442 or 332)</option>
+                    <option value="Type II" data-cc="0.75">Type II (222, 111, or 000)</option>
+                    <option value="Type III" data-cc="1.0">Type III (211 or 200)</option>
+                    <option value="Type IV" data-cc="0.75">Type IV (2HH)</option>
+                    <option value="Type V" data-cc="1.5">Type V (111 or 000)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <fieldset>
+                    <legend>Exposure Hazards:</legend>
+                    <input type="radio" id="exposureYes" name="exposure" value="yes">
+                    <label for="exposureYes">Yes</label>
+                    <input type="radio" id="exposureNo" name="exposure" value="no" checked>
+                    <label for="exposureNo">No</label>
+                </fieldset>
+                <p class="note">Exposure Hazard: A structure within 50 ft of another building and greater than 100 ft<sup>2</sup> or larger in area</p>
+            </div>
+            <div class="form-group">
+                <fieldset>
+                    <legend>Approved Automatic Sprinklers Provided:</legend>
+                    <input type="radio" id="sprinklersYes" name="sprinklers" value="yes">
+                    <label for="sprinklersYes">Yes</label>
+                    <input type="radio" id="sprinklersNo" name="sprinklers" value="no" checked>
+                    <label for="sprinklersNo">No</label>
+                </fieldset>
+            </div>
+            <button type="button" onclick="calculateWaterSupply()">Calculate</button>
+        </form>
+        <div id="result" aria-live="polite"></div>
+    </main>
+    <footer>
+        <p>Built with NFPA 1142 Standards</p>
+    </footer>
+    <script src="script.js"></script>
 </body>
 </html>
