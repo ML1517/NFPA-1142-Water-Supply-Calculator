@@ -38,28 +38,36 @@
             font-weight: bold;
             color: #333;
         }
+        em {
+            font-size: 0.9em;
+            color: #555;
+        }
     </style>
 </head>
 <body>
     <h1>NFPA 1142 Water Supply Calculator</h1>
     <form id="waterSupplyForm">
         <label>Length (ft): 
-            <input type="number" id="length" min="0" step="0.1" required>
+            <input type="number" id="length" min="0" step="0.1">
         </label>
         <label>Width (ft): 
-            <input type="number" id="width" min="0" step="0.1" required>
+            <input type="number" id="width" min="0" step="0.1">
         </label>
         <label>Height (ft): 
-            <input type="number" id="height" min="0" step="0.1" required>
+            <input type="number" id="height" min="0" step="0.1">
         </label>
-        <label>Occupancy Type:
-            <select id="occupancy">
-                <option value="Dwellings" data-ohc="7" data-dwelling="true">Dwellings (OHC 7)</option>
-                <option value="Apartments" data-ohc="7" data-dwelling="false">Apartments (OHC 7)</option>
-                <option value="Hospitals" data-ohc="7" data-dwelling="false">Hospitals (OHC 7)</option>
-                <option value="Restaurants" data-ohc="5" data-dwelling="false">Restaurants (OHC 5)</option>
-                <option value="Department Stores" data-ohc="4" data-dwelling="false">Department Stores (OHC 4)</option>
-                <option value="Cereal Mills" data-ohc="3" data-dwelling="false">Cereal Mills (OHC 3)</option>
+        <p><em>Or enter volume directly:</em></p>
+        <label>Volume (ft³): 
+            <input type="number" id="volume" min="0" step="0.1">
+        </label>
+        <p><em>Note: If volume is entered, it will override the calculated volume from dimensions.</em></p>
+        <label>Occupancy Hazard Classification:
+            <select id="ohc">
+                <option value="3">3 Severe</option>
+                <option value="4">4 High</option>
+                <option value="5">5 Moderate</option>
+                <option value="6">6 Low</option>
+                <option value="7">7 Light</option>
             </select>
         </label>
         <label>Construction Type:
@@ -75,6 +83,7 @@
             <input type="radio" name="exposure" value="yes"> Yes
             <input type="radio" name="exposure" value="no" checked> No
         </label>
+        <p><em>Exposure Hazard: A structure within 50 ft of another building and greater than 100 ft<sup>2</sup> or larger in area</em></p>
         <label>Approved Automatic Sprinklers Provided:
             <input type="radio" name="sprinklers" value="yes"> Yes
             <input type="radio" name="sprinklers" value="no" checked> No
@@ -86,39 +95,46 @@
     <script>
         function calculateWaterSupply() {
             // Retrieve input values
-            const length = parseFloat(document.getElementById('length').value);
-            const width = parseFloat(document.getElementById('width').value);
-            const height = parseFloat(document.getElementById('height').value);
-            const occupancy = document.getElementById('occupancy');
-            const selectedOccupancy = occupancy.options[occupancy.selectedIndex];
-            const ohc = parseFloat(selectedOccupancy.getAttribute('data-ohc'));
-            const isDwelling = selectedOccupancy.getAttribute('data-dwelling') === 'true';
+            const lengthInput = document.getElementById('length').value;
+            const widthInput = document.getElementById('width').value;
+            const heightInput = document.getElementById('height').value;
+            const volumeInput = document.getElementById('volume').value;
+            const ohc = parseFloat(document.getElementById('ohc').value);
             const construction = document.getElementById('construction');
             const selectedConstruction = construction.options[construction.selectedIndex];
-            let cc = parseFloat(selectedConstruction.getAttribute('data-cc'));
+            const cc = parseFloat(selectedConstruction.getAttribute('data-cc'));
             const exposure = document.querySelector('input[name="exposure"]:checked').value;
             const sprinklers = document.querySelector('input[name="sprinklers"]:checked').value;
 
-            // Input validation
-            if (isNaN(length) || isNaN(width) || isNaN(height) || length <= 0 || width <= 0 || height <= 0) {
-                alert('Please enter valid dimensions greater than zero.');
-                return;
-            }
-
-            // Calculate actual structure volume
-            const actualVolume = length * width * height;
-
-            // Cap CC at 1.0 for dwellings per NFPA 1142 Section 6.2.2
-            if (isDwelling && cc > 1.0) {
-                cc = 1.0;
+            // Determine volume
+            let volume;
+            if (volumeInput) {
+                volume = parseFloat(volumeInput);
+                if (isNaN(volume) || volume <= 0) {
+                    alert('Please enter a valid positive volume.');
+                    return;
+                }
+            } else {
+                if (!lengthInput || !widthInput || !heightInput) {
+                    alert('Please enter all dimensions (length, width, height) or the volume directly.');
+                    return;
+                }
+                const length = parseFloat(lengthInput);
+                const width = parseFloat(widthInput);
+                const height = parseFloat(heightInput);
+                if (isNaN(length) || isNaN(width) || isNaN(height) || length <= 0 || width <= 0 || height <= 0) {
+                    alert('Please enter valid positive dimensions.');
+                    return;
+                }
+                volume = length * width * height;
             }
 
             // Calculate full minimum water supply without sprinkler reduction
             let wsMin_full;
             if (exposure === 'no') {
-                wsMin_full = (actualVolume / ohc) * cc;
+                wsMin_full = (volume / ohc) * cc;
             } else {
-                wsMin_full = (actualVolume / ohc) * cc * 1.5;
+                wsMin_full = (volume / ohc) * cc * 1.5;
             }
 
             // Apply 50% reduction to water supply if sprinklers are present
