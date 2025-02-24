@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFPA 1142 Water Supply Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="number"], select {
+            margin-left: 10px;
+            padding: 5px;
+        }
+        input[type="radio"] {
+            margin-left: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>NFPA 1142 Water Supply Calculator</h1>
+    <form id="waterSupplyForm">
+        <label>Length (ft): 
+            <input type="number" id="length" min="0" step="0.1" required>
+        </label>
+        <label>Width (ft): 
+            <input type="number" id="width" min="0" step="0.1" required>
+        </label>
+        <label>Height (ft): 
+            <input type="number" id="height" min="0" step="0.1" required>
+        </label>
+        <label>Occupancy Type:
+            <select id="occupancy">
+                <option value="Dwellings" data-ohc="7" data-dwelling="true">Dwellings (OHC 7)</option>
+                <option value="Apartments" data-ohc="7" data-dwelling="false">Apartments (OHC 7)</option>
+                <option value="Hospitals" data-ohc="7" data-dwelling="false">Hospitals (OHC 7)</option>
+                <option value="Restaurants" data-ohc="5" data-dwelling="false">Restaurants (OHC 5)</option>
+                <option value="Department Stores" data-ohc="4" data-dwelling="false">Department Stores (OHC 4)</option>
+                <option value="Cereal Mills" data-ohc="3" data-dwelling="false">Cereal Mills (OHC 3)</option>
+            </select>
+        </label>
+        <label>Construction Type:
+            <select id="construction">
+                <option value="Type I" data-cc="0.5">Type I (442 or 332)</option>
+                <option value="Type II" data-cc="0.75">Type II (222, 111, or 000)</option>
+                <option value="Type III" data-cc="1.0">Type III (211 or 200)</option>
+                <option value="Type IV" data-cc="0.75">Type IV (2HH)</option>
+                <option value="Type V" data-cc="1.5">Type V (111 or 000)</option>
+            </select>
+        </label>
+        <label>Exposure Hazards:
+            <input type="radio" name="exposure" value="yes"> Yes
+            <input type="radio" name="exposure" value="no" checked> No
+        </label>
+        <label>Approved Automatic Sprinklers Provided:
+            <input type="radio" name="sprinklers" value="yes"> Yes
+            <input type="radio" name="sprinklers" value="no" checked> No
+        </label>
+        <button type="button" onclick="calculateWaterSupply()">Calculate</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        function calculateWaterSupply() {
+            // Retrieve input values
+            const length = parseFloat(document.getElementById('length').value);
+            const width = parseFloat(document.getElementById('width').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const occupancy = document.getElementById('occupancy');
+            const selectedOccupancy = occupancy.options[occupancy.selectedIndex];
+            const ohc = parseFloat(selectedOccupancy.getAttribute('data-ohc'));
+            const isDwelling = selectedOccupancy.getAttribute('data-dwelling') === 'true';
+            const construction = document.getElementById('construction');
+            const selectedConstruction = construction.options[construction.selectedIndex];
+            let cc = parseFloat(selectedConstruction.getAttribute('data-cc'));
+            const exposure = document.querySelector('input[name="exposure"]:checked').value;
+            const sprinklers = document.querySelector('input[name="sprinklers"]:checked').value;
+
+            // Input validation
+            if (isNaN(length) || isNaN(width) || isNaN(height) || length <= 0 || width <= 0 || height <= 0) {
+                alert('Please enter valid dimensions greater than zero.');
+                return;
+            }
+
+            // Calculate actual structure volume
+            const actualVolume = length * width * height;
+
+            // Cap CC at 1.0 for dwellings per NFPA 1142 Section 6.2.2
+            if (isDwelling && cc > 1.0) {
+                cc = 1.0;
+            }
+
+            // Calculate full minimum water supply without sprinkler reduction
+            let wsMin_full;
+            if (exposure === 'no') {
+                wsMin_full = (actualVolume / ohc) * cc;
+            } else {
+                wsMin_full = (actualVolume / ohc) * cc * 1.5;
+            }
+
+            // Apply 50% reduction to water supply if sprinklers are present
+            let wsMin;
+            if (sprinklers === 'yes') {
+                wsMin = 0.5 * wsMin_full;
+            } else {
+                wsMin = wsMin_full;
+            }
+
+            // Enforce NFPA 1142 minimum water supply requirements
+            if (exposure === 'no') {
+                wsMin = Math.max(wsMin, 2000);
+            } else {
+                wsMin = Math.max(wsMin, 3000);
+            }
+
+            // Determine minimum water delivery rate based on NFPA 1142 Table 4.6.1
+            let deliveryRate;
+            if (wsMin < 2500) {
+                deliveryRate = 250;
+            } else if (wsMin < 10000) {
+                deliveryRate = 500;
+            } else if (wsMin < 20000) {
+                deliveryRate = 750;
+            } else {
+                deliveryRate = 1000;
+            }
+
+            // Display results
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <p>Minimum Water Supply: ${Math.round(wsMin)} gallons</p>
+                <p>Minimum Water Delivery Rate: ${deliveryRate} gpm</p>
+            `;
+        }
+    </script>
+</body>
+</html>
