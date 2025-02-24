@@ -17,25 +17,26 @@
         <form id="waterSupplyForm" aria-label="Water Supply Calculation Form">
             <div class="form-group">
                 <label for="length">Length (ft):</label>
-                <input type="number" id="length" min="0" step="0.1" placeholder="e.g., 50">
+                <input type="number" id="length" name="length" min="0" step="0.1" placeholder="e.g., 50" required>
             </div>
             <div class="form-group">
                 <label for="width">Width (ft):</label>
-                <input type="number" id="width" min="0" step="0.1" placeholder="e.g., 30">
+                <input type="number" id="width" name="width" min="0" step="0.1" placeholder="e.g., 30" required>
             </div>
             <div class="form-group">
                 <label for="height">Height (ft):</label>
-                <input type="number" id="height" min="0" step="0.1" placeholder="e.g., 20">
+                <input type="number" id="height" name="height" min="0" step="0.1" placeholder="e.g., 20" required>
             </div>
             <p class="note">Or enter volume directly:</p>
             <div class="form-group">
                 <label for="volume">Volume (ft³):</label>
-                <input type="number" id="volume" min="0" step="0.1" placeholder="e.g., 30000">
+                <input type="number" id="volume" name="volume" min="0" step="0.1" placeholder="e.g., 30000">
             </div>
             <p class="note">Note: If volume is entered, it will override the calculated volume from dimensions.</p>
             <div class="form-group">
                 <label for="ohc">Occupancy Hazard Classification:</label>
-                <select id="ohc">
+                <select id="ohc" name="ohc" required>
+                    <option value="">Select Classification</option>
                     <option value="3">3 Severe</option>
                     <option value="4">4 High</option>
                     <option value="5">5 Moderate</option>
@@ -45,7 +46,8 @@
             </div>
             <div class="form-group">
                 <label for="construction">Construction Type:</label>
-                <select id="construction">
+                <select id="construction" name="construction" required>
+                    <option value="">Select Type</option>
                     <option value="Type I" data-cc="0.5">Type I (442 or 332)</option>
                     <option value="Type II" data-cc="0.75">Type II (222, 111, or 000)</option>
                     <option value="Type III" data-cc="1.0">Type III (211 or 200)</option>
@@ -79,6 +81,6 @@
     <footer>
         <p>Built with NFPA 1142 Standards</p>
     </footer>
-    <script src="script.js"></script>
+    <script src="script.js" async></script>
 </body>
 </html>
