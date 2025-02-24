@@ -15,25 +15,25 @@
     </header>
     <main>
         <form id="waterSupplyForm" aria-label="Water Supply Calculation Form">
-            <div class="form-group">
+            <fieldset>
                 <label for="length">Length (ft):</label>
                 <input type="number" id="length" name="length" min="0" step="0.1" placeholder="e.g., 50" required>
-            </div>
-            <div class="form-group">
+            </fieldset>
+            <fieldset>
                 <label for="width">Width (ft):</label>
                 <input type="number" id="width" name="width" min="0" step="0.1" placeholder="e.g., 30" required>
-            </div>
-            <div class="form-group">
+            </fieldset>
+            <fieldset>
                 <label for="height">Height (ft):</label>
                 <input type="number" id="height" name="height" min="0" step="0.1" placeholder="e.g., 20" required>
-            </div>
+            </fieldset>
             <p class="note">Or enter volume directly:</p>
-            <div class="form-group">
+            <fieldset>
                 <label for="volume">Volume (ft³):</label>
                 <input type="number" id="volume" name="volume" min="0" step="0.1" placeholder="e.g., 30000">
-            </div>
+            </fieldset>
             <p class="note">Note: If volume is entered, it will override the calculated volume from dimensions.</p>
-            <div class="form-group">
+            <fieldset>
                 <label for="ohc">Occupancy Hazard Classification:</label>
                 <select id="ohc" name="ohc" required>
                     <option value="">Select Classification</option>
@@ -43,8 +43,8 @@
                     <option value="6">6 Low</option>
                     <option value="7">7 Light</option>
                 </select>
-            </div>
-            <div class="form-group">
+            </fieldset>
+            <fieldset>
                 <label for="construction">Construction Type:</label>
                 <select id="construction" name="construction" required>
                     <option value="">Select Type</option>
@@ -54,26 +54,22 @@
                     <option value="Type IV" data-cc="0.75">Type IV (2HH)</option>
                     <option value="Type V" data-cc="1.5">Type V (111 or 000)</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <fieldset>
-                    <legend>Exposure Hazards:</legend>
-                    <input type="radio" id="exposureYes" name="exposure" value="yes">
-                    <label for="exposureYes">Yes</label>
-                    <input type="radio" id="exposureNo" name="exposure" value="no" checked>
-                    <label for="exposureNo">No</label>
-                </fieldset>
+            </fieldset>
+            <fieldset>
+                <legend>Exposure Hazards:</legend>
+                <input type="radio" id="exposureYes" name="exposure" value="yes">
+                <label for="exposureYes">Yes</label>
+                <input type="radio" id="exposureNo" name="exposure" value="no" checked>
+                <label for="exposureNo">No</label>
                 <p class="note">Exposure Hazard: A structure within 50 ft of another building and greater than 100 ft<sup>2</sup> or larger in area</p>
-            </div>
-            <div class="form-group">
-                <fieldset>
-                    <legend>Approved Automatic Sprinklers Provided:</legend>
-                    <input type="radio" id="sprinklersYes" name="sprinklers" value="yes">
-                    <label for="sprinklersYes">Yes</label>
-                    <input type="radio" id="sprinklersNo" name="sprinklers" value="no" checked>
-                    <label for="sprinklersNo">No</label>
-                </fieldset>
-            </div>
+            </fieldset>
+            <fieldset>
+                <legend>Approved Automatic Sprinklers Provided:</legend>
+                <input type="radio" id="sprinklersYes" name="sprinklers" value="yes">
+                <label for="sprinklersYes">Yes</label>
+                <input type="radio" id="sprinklersNo" name="sprinklers" value="no" checked>
+                <label for="sprinklersNo">No</label>
+            </fieldset>
             <button type="button" onclick="calculateWaterSupply()">Calculate</button>
         </form>
         <div id="result" aria-live="polite"></div>
@@ -81,6 +77,6 @@
     <footer>
         <p>Built with NFPA 1142 Standards</p>
     </footer>
-    <script src="script.js" async></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
